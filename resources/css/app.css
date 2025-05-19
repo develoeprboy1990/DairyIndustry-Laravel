@@ -1,0 +1,29 @@
+.form-select {
+    width: auto !important;
+}
+.table {
+    width: 100%;
+    table-layout: auto; /* Allow dynamic width adjustment */
+    border-collapse: collapse; /* Ensure borders collapse for neatness */
+}
+
+/* Table cell padding */
+.table td, .table th {
+    padding: 8px 12px;
+    text-align: center;
+}
+
+/* Make sure images don't overflow */
+.table img {
+    max-width: 50px; /* Adjust as necessary */
+    max-height: 50px;
+}
+
+/* For small screen adjustments */
+@media (max-width: 768px) {
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
