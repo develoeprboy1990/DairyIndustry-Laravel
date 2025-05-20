@@ -228,10 +228,14 @@
                                 <option value="coolingRooms" @if ($product->main_category === 'coolingRooms') selected @endif>Cooling
                                     Rooms
                                 </option>
+                                    <option value="coolingRoomsBeiruit" @if ($product->main_category === 'coolingRoomsBeiruit') selected @endif>Cooling
+                                    Rooms Beiruit
+                                </option>
                             @else
                                 <option value="">Select any one</option>
                                 <option value="warehouse">Wirehouse</option>
                                 <option value="coolingRooms">Cooling Rooms</option>
+                                    <option value="coolingRoomsBeiruit">Cooling Rooms Beiruit </option>
                             @endisset
                         </select>
                         @error('main_category')
