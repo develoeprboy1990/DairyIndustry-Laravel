@@ -48,6 +48,18 @@ class GeneralRestrictionController extends Controller
         return view("general_restrictions.coolingRooms", ['categories'=>$categories]);
     }
 
+    public function coolingRoomsBeiruit(Request $request): View
+    {
+        $categories = [
+            [
+                'category_id' => '4ddde221-9c9f-4e35-86a4-e169b499b34d',
+                'category_name' => 'مواد المنتجة'
+            ]
+        ];
+
+        return view("general_restrictions.coolingRoomsBeiruit", ['categories'=>$categories]);
+    }
+
 
 
     // === with Ids
@@ -67,6 +79,14 @@ class GeneralRestrictionController extends Controller
         $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->get();
 
         return view("general_restrictions.c_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
+    }
+    public function coolingRoomsBeiruitCheese(Request $request): View
+    {
+        $sub_category = "coolingRoomsBeiruit";
+        $category = Category::find($request->id); 
+        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->get();
+
+        return view("general_restrictions.cb_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
 
 

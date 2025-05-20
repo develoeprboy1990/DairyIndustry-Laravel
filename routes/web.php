@@ -438,10 +438,17 @@ Route::group(['middleware' => ['auth']], function () {
     // == General Restrictions routes
     // === mbb 10 Feb 2025 ====
     Route::get('/general_restrictions', [\App\Http\Controllers\GeneralRestrictionController::class, 'index'])->name('generalRestrictions.index');
+    
     Route::get('/general_restrictions/warehouse', [\App\Http\Controllers\GeneralRestrictionController::class, 'warehouse'])->name('generalRestrictions.warehouse');
     Route::get('/general_restrictions/coolingRooms', [\App\Http\Controllers\GeneralRestrictionController::class, 'coolingRooms'])->name('generalRestrictions.coolingRooms');
+    Route::get('/general_restrictions/coolingRoomsBeiruit', [\App\Http\Controllers\GeneralRestrictionController::class, 'coolingRoomsBeiruit'])->name('generalRestrictions.coolingRoomsBeiruit');
+    
     Route::get('/general_restrictions/whereHouseCheese/{id}', [\App\Http\Controllers\GeneralRestrictionController::class, 'whereHouseCheese'])->name('generalRestrictions.whereHouseCheese');
     Route::get('/general_restrictions/coolingRoomsCheese/{id}', [\App\Http\Controllers\GeneralRestrictionController::class, 'coolingRoomsCheese'])->name('generalRestrictions.coolingRoomsCheese');
+    Route::get('/general_restrictions/coolingRoomsBeiruitCheese/{id}', [\App\Http\Controllers\GeneralRestrictionController::class, 'coolingRoomsBeiruitCheese'])->name('generalRestrictions.coolingRoomsBeiruitCheese');
+
+    
+    
     Route::get('/general_restrictions/warehouse/create/{id}', [\App\Http\Controllers\GeneralRestrictionController::class, 'wcreate'])->name('generalRestrictions.wcreate');
     Route::get('/general_restrictions/coolingRooms/create/{id}', [\App\Http\Controllers\GeneralRestrictionController::class, 'ccreate'])->name('generalRestrictions.ccreate');
     Route::post('/general_restrictions', [\App\Http\Controllers\GeneralRestrictionController::class, 'w_store'])->name('generalRestrictions.wstore');
