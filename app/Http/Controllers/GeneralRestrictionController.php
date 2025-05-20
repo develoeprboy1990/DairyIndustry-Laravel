@@ -63,9 +63,8 @@ class GeneralRestrictionController extends Controller
     public function coolingRoomsCheese(Request $request): View
     {
         $sub_category = "coolingRooms";
-        $category = Category::find($request->id);
-
-        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
+        $category = Category::find($request->id); 
+        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->get();
 
         return view("general_restrictions.c_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }

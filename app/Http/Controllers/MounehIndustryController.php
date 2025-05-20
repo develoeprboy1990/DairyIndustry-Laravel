@@ -77,6 +77,7 @@ class MounehIndustryController extends Controller
      */
     public function store(StoreMounehIndustryRequest $request): RedirectResponse
     {
+   
         $mounehIndustry = new MounehIndustry();
         $mounehIndustry->type_of_mouneh = $request->type_of_mouneh;
         $mounehIndustry->quantity_of_fruit_vegetable = $request->quantity_of_fruit_vegetable;
@@ -167,7 +168,7 @@ class MounehIndustryController extends Controller
                 'plastic_bucket_stock' => $request->plastic_bucket_stock,
                 'main_category' => $request->main_category
             ]);
-    
+        
             if ($request->hasFile('image')) { // Check if a file is uploaded
                 $product->updateImage($request->file('image')); // Use file() to get the UploadedFile instance
             }
@@ -198,7 +199,7 @@ class MounehIndustryController extends Controller
                 $generalRestriction->product_name = $request->name;
                 $generalRestriction->gr_stock = $request->in_stock ?? 0;
                 $generalRestriction->gr_price = $request->cost;
-                $generalRestriction->save();
+                $generalRestriction->save(); 
             }
         }else {
             // If next_phase checkbox is not checked, set product_id to null

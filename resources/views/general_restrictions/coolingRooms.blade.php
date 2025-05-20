@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', __('Warehouse'))
+@section('title', __('CoolingRooms'))
 
 @section('content')
     <div class="d-flex align-items-center justify-content-center mb-3">
-        <div class="h4 mb-0 flex-grow-1">@lang('Warehouse')</div>
+        <div class="h4 mb-0 flex-grow-1">@lang('CoolingRooms')</div>
         <x-back-btn href="{{ route('generalRestrictions.index') }}" />
     </div>
     <div class="row">
