@@ -23,13 +23,30 @@ class GeneralRestrictionController extends Controller
     public function warehouse(Request $request): View
     {
         $categories = [
-            [
+            /*[
                 'category_id' => 'c734f5c4-f620-4ae0-b34a-447cb3a1b9a5',
                 'category_name' => 'بلاستكيات'
             ],
             [
                 'category_id' => '458ab8f7-e6e1-4f2e-97ad-7c9a38642912',
                 'category_name' => 'مواد الاولية'
+            ]*/
+
+            [
+                'category_id' => '7d8a1517-d278-4ead-81e0-8966bde5beee',
+                'category_name' => 'مواد الاولية'
+            ],
+            [
+                'category_id' => 'ab8dd579-fbe4-4a97-91f3-463d49ddb671',
+                'category_name' => 'مواد المنتجة'
+            ],
+            [
+                'category_id' => '65fb1f17-e98b-44fd-898c-5f59c4f7e20c',
+                'category_name' => 'مواد البلاستكية'
+            ],
+            [
+                'category_id' => '2152658c-b5a2-46da-ab39-0301567594d1',
+                'category_name' => 'مواد التنظيف'
             ]
         ];
 
@@ -39,10 +56,28 @@ class GeneralRestrictionController extends Controller
     public function coolingRooms(Request $request): View
     {
         $categories = [
-            [
+            /*[
                 'category_id' => '4ddde221-9c9f-4e35-86a4-e169b499b34d',
                 'category_name' => 'مواد المنتجة'
+            ]*/
+            [
+                'category_id' => '7d8a1517-d278-4ead-81e0-8966bde5beee',
+                'category_name' => 'مواد الاولية'
+            ],
+            [
+                'category_id' => 'ab8dd579-fbe4-4a97-91f3-463d49ddb671',
+                'category_name' => 'مواد المنتجة'
+            ],
+            [
+                'category_id' => '65fb1f17-e98b-44fd-898c-5f59c4f7e20c',
+                'category_name' => 'مواد البلاستكية'
+            ],
+            [
+                'category_id' => '2152658c-b5a2-46da-ab39-0301567594d1',
+                'category_name' => 'مواد التنظيف'
             ]
+
+
         ];
 
         return view("general_restrictions.coolingRooms", ['categories'=>$categories]);
@@ -51,9 +86,25 @@ class GeneralRestrictionController extends Controller
     public function coolingRoomsBeiruit(Request $request): View
     {
         $categories = [
-            [
+            /*[
                 'category_id' => '4ddde221-9c9f-4e35-86a4-e169b499b34d',
                 'category_name' => 'مواد المنتجة'
+            ]*/
+            [
+                'category_id' => '7d8a1517-d278-4ead-81e0-8966bde5beee',
+                'category_name' => 'مواد الاولية'
+            ],
+            [
+                'category_id' => 'ab8dd579-fbe4-4a97-91f3-463d49ddb671',
+                'category_name' => 'مواد المنتجة'
+            ],
+            [
+                'category_id' => '65fb1f17-e98b-44fd-898c-5f59c4f7e20c',
+                'category_name' => 'مواد البلاستكية'
+            ],
+            [
+                'category_id' => '2152658c-b5a2-46da-ab39-0301567594d1',
+                'category_name' => 'مواد التنظيف'
             ]
         ];
 
@@ -76,7 +127,7 @@ class GeneralRestrictionController extends Controller
     {
         $sub_category = "coolingRooms";
         $category = Category::find($request->id); 
-        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->get();
+        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
         return view("general_restrictions.c_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
@@ -84,7 +135,7 @@ class GeneralRestrictionController extends Controller
     {
         $sub_category = "coolingRoomsBeiruit";
         $category = Category::find($request->id); 
-        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->get();
+        $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
         return view("general_restrictions.cb_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
