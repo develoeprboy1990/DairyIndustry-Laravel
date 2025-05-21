@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Drawer;
 use App\Models\Payment;
 use App\Models\Settings;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -58,6 +59,12 @@ class CustomerPaymentController extends Controller
         //     $customerAccount->delete();
         // }
         $payment->delete();
+
+        // Delete associated transaction
+        Transaction::where('customer_id', $customer->id)
+                ->where('reference_number', $payment->number)
+                ->delete();
+
         return Redirect::back()->with("success", __("Deleted"));
     }
 
@@ -76,6 +83,16 @@ class CustomerPaymentController extends Controller
         $payment->comments = $request->comments;
         $payment->date = $request->date ?? now();
         $payment->save();
+
+        // Create a transaction record for this payment
+        $transaction = new Transaction();
+        $transaction->customer_id = $customer->id;
+        $transaction->credit = $payment->amount; // Payment adds to credit
+        $transaction->debit = 0; // No debit for a payment
+        $transaction->description = $payment->comments ?? 'Payment';
+        $transaction->reference_number = $payment->number;
+        $transaction->save();
+
 
         // $latestStatement = AccountStatement::where('customer_id',  $customer->id)->latest()->first();
         // $latesBalance = $latestStatement ? $latestStatement->balance : 0;
@@ -99,6 +116,7 @@ class CustomerPaymentController extends Controller
             'comments' => ['nullable', 'string'],
             'date' => ['required', 'date'],
         ]);
+        
         $oldCreatedAt = $payment->date ?? now();
         $payment->amount = $request->amount ?? 0;
         $payment->comments = $request->comments;
@@ -106,24 +124,27 @@ class CustomerPaymentController extends Controller
         $payment->date = $request->date ?? $oldCreatedAt;
         $payment->save();
 
+        // Find and update the transaction record for this payment
+        $transaction = Transaction::where('customer_id', $customer->id)
+                                ->where('reference_number', $payment->number)
+                                ->first();
+                                
+        if ($transaction) {
+            // Update existing transaction
+            $transaction->credit = $payment->amount;
+            $transaction->description = $payment->comments ?? 'Payment';
+            $transaction->save();
+        } else {
+            // Create new transaction if one doesn't exist
+            $transaction = new Transaction();
+            $transaction->customer_id = $customer->id;
+            $transaction->credit = $payment->amount;
+            $transaction->debit = 0;
+            $transaction->description = $payment->comments ?? 'Payment';
+            $transaction->reference_number = $payment->number;
+            $transaction->save();
+        }
 
-
-        // $latestStatement = AccountStatement::where('customer_id',  $customer->id)->where('reference_number', '!=', $payment->number)->latest()->first();
-        // $latesBalance = $latestStatement ? $latestStatement->balance : 0;
-        // $customerAccount = AccountStatement::where('customer_id',  $customer->id)->where('reference_number', $payment->number)->first();
-        // $customerAccount->credit = $payment->amount;
-        // $customerAccount->debit = 0;
-        // $customerAccount->balance = $latesBalance + $payment->amount;
-        // $customerAccount->description = $payment->comments;
-        // $customerAccount->save();
-
-        // if ($this->hasCashDrawer()) {
-        //     $drawer = Drawer::where('payment_id', $payment->id)->first();
-        //     if ($drawer) {
-        //         $drawer->amount = $payment->amount;
-        //         $drawer->save();
-        //     }
-        // }
         return Redirect::route('customers.payments.index', $customer->id)->with('success', __('Updated'));
     }
 
