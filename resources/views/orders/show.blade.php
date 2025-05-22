@@ -16,11 +16,13 @@
     </div>
 
     <div class="mb-3">
+        @can_edit
         <a class="btn btn-primary" href=" {{ route('orders.edit', $order) }}">
             <span class=" d-flex align-items-center">
                 <x-heroicon-o-pencil-square class="hero-icon-sm me-1" /> @lang('Edit')
             </span>
         </a>
+        @endcan_edit
         <a class="btn btn-primary" target="_blank" href=" {{ route('orders.print', $order) }}">
             <span class=" d-flex align-items-center">
                 <x-heroicon-o-printer class="hero-icon-sm me-1" /> @lang('Print Receipt')
