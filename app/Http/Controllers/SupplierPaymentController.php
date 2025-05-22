@@ -13,10 +13,29 @@ class SupplierPaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $payments = SupplierPayment::search(trim($request->search_query))->orderBy('date', 'DESC')->paginate(20);
-
+         
+        $query = SupplierPayment::query();
+        // Search filter (assuming you have a search scope)
+        if ($request->filled('search_query')) {
+            $query->search(trim($request->search_query));
+        }
+        // Date range filters
+        if ($request->filled('start_date')) {
+            $query->where('date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('date', '<=', $request->end_date);
+        }
+        // Supplier filter
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+        // Order and paginate
+        $payments = $query->orderBy('date', 'DESC')->paginate(20);
+        $suppliers = Supplier::get();
         return view('supplier_payments.index', [
             'payments' => $payments,
+            'suppliers' => $suppliers,
         ]);
     }
 
