@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary w-100">@lang('Use Filter')</button>
+                    <button type="submit" class="btn btn-primary w-100">@lang('Confirm Transfer')</button>
                 </div>
             </form>
         </div>
