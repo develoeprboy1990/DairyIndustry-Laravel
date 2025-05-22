@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class ExpiredProduct extends Model
 {
     use HasFactory, HasUuid;
-    
+
     protected $fillable = [
         'product_id',
         'expired_stock',
@@ -18,7 +18,15 @@ class ExpiredProduct extends Model
         'trash',
         'reproduce'
     ];
-    
+
+    protected $casts = [
+        'expired_stock' => 'float',
+        'conversion_rate' => 'decimal:2',
+        'expiry_date' => 'date',
+        'trash' => 'boolean',
+        'reproduce' => 'boolean',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');

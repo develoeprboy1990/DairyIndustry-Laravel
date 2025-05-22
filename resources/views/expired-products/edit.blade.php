@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', __('Edit') . ' ' . __('Item'))
+@section('title', __('Edit') . ' ' . __('Expired Item'))
 
 @section('content')
     <div class="d-flex align-items-center justify-content-center mb-3">
         <div class="flex-grow-1">
             <x-page-title>@lang('Edit Item')</x-page-title>
         </div>
-        <x-back-btn href="{{ route('products.index') }}" />
+        <x-back-btn href="{{ route('expired-products.index') }}" />
     </div>
-    @include('products.partials.form')
+    @include('expired-products.partials.editform')
 @endsection

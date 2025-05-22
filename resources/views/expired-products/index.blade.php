@@ -7,8 +7,7 @@
         <div class="flex-grow-1">
             <x-page-title>@lang('Expired Items')</x-page-title>
         </div>
-    </div>
-
+    </div> 
     <x-card>
         <x-table id="expired-products-table">
             <x-thead>
@@ -17,7 +16,7 @@
                     <x-th>@lang('Description')</x-th>
                     <x-th>@lang('Expiry Date')</x-th>
                     <x-th>@lang('Category')</x-th>
-                    <x-th>@lang('Status')</x-th>
+                    <x-th>@lang('status.text')</x-th>
                     <x-th></x-th>
                 </tr>
             </x-thead>
@@ -39,9 +38,7 @@
             let dataTable = $('#expired-products-table').DataTable({
                 processing: true,
                 serverSide: true,
-                language: {
-                    url: '{{ asset("datatables/i18n/{$settings->lang}.json") }}',
-                },
+                language: {url: '{{ asset("datatables/i18n/{$settings->lang}.json") }}',},
                 ajax: {
                     url: "{{ route('api.expired-products.index') }}",
                     dataSrc: 'data'
@@ -78,6 +75,8 @@
                         var reproduceUrl = "{{ route('expired-products.reproduce.form', ':id') }}";
                         trashUrl = trashUrl.replace(':id', data.id);
                         reproduceUrl = reproduceUrl.replace(':id', data.id);
+                        editUrl = "{{ route('expired-products.edit', ':id') }}";
+                        editUrl = editUrl.replace(':id', data.id);
                     
                         return `<div class="dropdown d-flex">` +
                             `<button class="btn btn-link text-black p-0" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">` +
@@ -88,6 +87,12 @@
                             `<x-heroicon-o-arrow-left class="hero-icon-sm me-2 text-gray-400" />` +
                             `@lang('Reproduce')` +
                             `</x-dropdown-item>` +
+
+                              `<x-dropdown-item href="${editUrl}">` +  // <-- Added Edit button here
+    `<x-heroicon-o-pencil class="hero-icon-sm me-2 text-gray-400" />` +
+    `@lang('Edit')` +
+    `</x-dropdown-item>` +
+    
                             `<x-dropdown-item>` +
                             `<form action="${trashUrl}" method="POST" id="form-${data.id}">` +
                             `@csrf` +

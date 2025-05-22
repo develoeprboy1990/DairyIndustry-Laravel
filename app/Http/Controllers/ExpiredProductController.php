@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\ExpiredProduct;
 use App\Models\Product;
 use App\Models\Category;
@@ -25,31 +26,31 @@ class ExpiredProductController extends Controller
         // Return the view with the total count
         return view('expired-products.index', compact('total_expired_items'));
     }
-    
+
     // Display the list of expired products
     public function reproduceForm($id)
     {
-          // Fetch the expired product by ID
+        // Fetch the expired product by ID
         $expiredProduct = ExpiredProduct::findOrFail($id);
-    
+
         // Fetch the product linked to this expired product
         $product = $expiredProduct->product;
-        
+
         $categories = Category::orderBy('sort_order', 'ASC')->get();
-    
+
         return view('expired-products.reproduce', compact('expiredProduct', 'product', 'categories'));
     }
-    
+
     // Display the list of expired products
     public function trash($id)
     {
         try {
             // Begin a transaction
             DB::beginTransaction();
-    
+
             // Find the expired product entry
             $expiredProduct = ExpiredProduct::findOrFail($id);
-    
+
             // Validate and update the original product
             $product = Product::find($expiredProduct->product_id);
             if ($product) {
@@ -62,26 +63,26 @@ class ExpiredProductController extends Controller
                 // Handle the case where the product doesn't exist
                 return Redirect::back()->withErrors(__("Associated product not found."));
             }
-    
+
             // Delete the expired product entry
             $expiredProduct->delete();
-    
+
             // Commit the transaction
             DB::commit();
-    
+
             return Redirect::back()->with("success", __("Deleted successfully."));
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
-    
+
             // Log the error for debugging
             Log::error("Error in trashing expired product: ", ['error' => $e->getMessage()]);
-    
+
             return Redirect::back()->withErrors(__("An error occurred. Please try again."));
         }
     }
-    
-      public function reproduce(Request $request): RedirectResponse
+
+    public function reproduce(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:100'],
@@ -113,18 +114,25 @@ class ExpiredProductController extends Controller
             'bos_unit' => ['nullable', 'string'],
             'weight' => ['nullable', 'string'],
             'conversion_amount' => ['nullable', 'numeric', 'min:0'],
-            
-            
-            
+
+
+
         ]);
 
 
         $box_price = 0;
         $unit_price = 0;
-        if($request->box_price === null && $request->unit_price !== null) {$box_price = $request->unit_price * $request->count_per_box ;$unit_price = $request->unit_price;}
-        else if($request->box_price !== null && $request->unit_price === null) {$unit_price = $request->box_price / $request->count_per_box ;$box_price = $request->box_price;}
-        else if($request->box_price !== null && $request->unit_price !== null) {$box_price = $request->box_price;$unit_price = $request->unit_price;}
-        
+        if ($request->box_price === null && $request->unit_price !== null) {
+            $box_price = $request->unit_price * $request->count_per_box;
+            $unit_price = $request->unit_price;
+        } else if ($request->box_price !== null && $request->unit_price === null) {
+            $unit_price = $request->box_price / $request->count_per_box;
+            $box_price = $request->box_price;
+        } else if ($request->box_price !== null && $request->unit_price !== null) {
+            $box_price = $request->box_price;
+            $unit_price = $request->unit_price;
+        }
+
         $old_product_id = $request->old_product_id;
         $expired_product_id = $request->expired_product_id;
 
@@ -159,7 +167,7 @@ class ExpiredProductController extends Controller
             'cost_unit' => $request->cost_unit,
             'box_unit' => $request->box_unit,
             'weight' => $request->weight,
-            'expired_product_id'=>$request->expired_product_id,
+            'expired_product_id' => $request->expired_product_id,
         ]);
 
         // echo($request->retailsale_price);
@@ -167,14 +175,14 @@ class ExpiredProductController extends Controller
         if ($request->has('image')) {
             $product->updateImage($request->image);
         }
-        
-  
+
+
         $OldProduct = Product::findOrFail($old_product_id);
 
         if ($OldProduct) {
             $OldProduct->update([
-                'expired_stock' => 0, 
-                'expired' => false               
+                'expired_stock' => 0,
+                'expired' => false
             ]);
         } else {
             // Handle the case where the product doesn't exist
@@ -184,18 +192,43 @@ class ExpiredProductController extends Controller
         $expiredProduct = ExpiredProduct::findOrFail($expired_product_id);
         if ($expiredProduct) {
             $expiredProduct->update([
-                'conversion_rate' => $request->conversion_amount, 
-                'reproduce' => true               
+                'conversion_rate' => $request->conversion_amount,
+                'reproduce' => true
             ]);
         } else {
             // Handle the case where the product doesn't exist
             return Redirect::back()->withErrors(__("Associated expired product not found."));
         }
-    
 
-        
+
+
         return redirect()->route('products.index')->with("success", __("Expired Products successfully reproduced"));
-
     }
 
+
+    public function edit(ExpiredProduct $expiredProduct)
+    {
+        return view('expired-products.edit', compact('expiredProduct'));
+    }
+    public function update(Request $request, ExpiredProduct $expiredProduct)
+    {
+        $request->validate([
+            'product_id' => 'nullable|string|max:36',
+            'expired_stock' => 'required|numeric|min:0',
+            'conversion_rate' => 'nullable|numeric|min:0',
+            'expiry_date' => 'required|date',
+            'trash' => 'boolean',
+            'reproduce' => 'boolean',
+        ]);
+
+        $expiredProduct->update($request->all());
+
+        return redirect()->route('expired-products.index')->with('success', 'Expired product updated successfully.');
+    }
+
+    public function destroy(ExpiredProduct $expiredProduct)
+    {
+        $expiredProduct->delete();
+        return redirect()->route('expired-products.index')->with('success', 'Expired product deleted successfully.');
+    }
 }
