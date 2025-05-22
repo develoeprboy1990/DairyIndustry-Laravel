@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUuid;
+class TransferHistory extends Model
+{
+    use HasFactory,HasUuid;
+    protected $table = 'transfer_history';
+    protected $fillable = [
+        'from_general_restriction_id',
+        'to_general_restriction_id',
+        'from_sub_category_name',
+        'to_sub_category_name',
+        'category_id',
+        'product_id',
+        'product_name',
+        'gr_stock',
+        'gr_price'
+    ];
+    protected $casts = [
+        'gr_price' => 'float',
+    ];
+    public function fromGeneralRestriction()
+    {
+        return $this->belongsTo(GeneralRestriction::class, 'from_general_restriction_id');
+    }
+    public function toGeneralRestriction()
+    {
+        return $this->belongsTo(GeneralRestriction::class, 'to_general_restriction_id');
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+    public function fromSubCategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'from_sub_category_name');
+    }
+    public function toSubCategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'to_sub_category_name');
+    }
+    public function getFromSubCategoryNameAttribute()
+    {
+        return $this->fromSubCategory ? $this->fromSubCategory->name : null;
+    }
+    public function getToSubCategoryNameAttribute()
+    {
+        return $this->toSubCategory ? $this->toSubCategory->name : null;
+    }
+    public function getFromGeneralRestrictionNameAttribute()
+    {
+        return $this->fromGeneralRestriction ? $this->fromGeneralRestriction->name : null;
+    }
+    public function getToGeneralRestrictionNameAttribute()
+    {
+        return $this->toGeneralRestriction ? $this->toGeneralRestriction->name : null;
+    }
+    public function getProductNameAttribute()
+    {
+        return $this->product ? $this->product->name : null;
+    }
+    public function getCategoryNameAttribute()
+    {
+        return $this->category ? $this->category->name : null;
+    }
+    public function getFromGeneralRestrictionStockAttribute()
+    {
+        return $this->fromGeneralRestriction ? $this->fromGeneralRestriction->gr_stock : null;
+    }
+}

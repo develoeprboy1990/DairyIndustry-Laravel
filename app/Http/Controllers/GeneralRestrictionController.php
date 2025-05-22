@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\GeneralRestriction;
+use App\Models\TransferHistory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+
+use Illuminate\Support\Facades\DB; 
 
 
 class GeneralRestrictionController extends Controller
@@ -37,7 +40,7 @@ class GeneralRestrictionController extends Controller
             ]
         ];
 
-        return view("general_restrictions.warehouse", ['categories'=>$categories]);
+        return view("general_restrictions.warehouse", ['categories' => $categories]);
     }
 
     public function coolingRooms(Request $request): View
@@ -59,7 +62,7 @@ class GeneralRestrictionController extends Controller
 
         ];
 
-        return view("general_restrictions.coolingRooms", ['categories'=>$categories]);
+        return view("general_restrictions.coolingRooms", ['categories' => $categories]);
     }
 
     public function coolingRoomsBeiruit(Request $request): View
@@ -79,7 +82,7 @@ class GeneralRestrictionController extends Controller
             ]
         ];
 
-        return view("general_restrictions.coolingRoomsBeiruit", ['categories'=>$categories]);
+        return view("general_restrictions.coolingRoomsBeiruit", ['categories' => $categories]);
     }
 
 
@@ -92,23 +95,81 @@ class GeneralRestrictionController extends Controller
 
         $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
-        return view("general_restrictions.w_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
+        return view("general_restrictions.w_cheese", ['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
     public function coolingRoomsCheese(Request $request): View
     {
         $sub_category = "coolingRooms";
-        $category = Category::find($request->id); 
+        $category = Category::find($request->id);
         $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
-        return view("general_restrictions.c_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
+        return view("general_restrictions.c_cheese", ['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
+
+ 
+    public function stockTransfer(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        // Validate inputs
+        $validated = $request->validate([
+            'id' => 'required|exists:general_restrictions,id',
+            'gr_stock' => 'required|integer|min:1',
+            'main_category' => 'required|string|max:255',  // adjust rules as per your model
+        ]);
+//dd($validated);
+        try {
+            DB::beginTransaction();
+            $generalRestriction = GeneralRestriction::findOrFail($validated['id']);
+
+            $transferAmount = $validated['gr_stock'];
+            $remainingStock = $generalRestriction->gr_stock - $transferAmount;
+
+            if ($remainingStock < 0) {
+                return Redirect::back()->with('error', __('Insufficient stock'));
+            }
+
+            // Create new GeneralRestriction record (transfer destination)
+            $newRecord = [
+                'product_id' => $generalRestriction->product_id,
+                'gr_stock' => $transferAmount,
+                'gr_price' => $generalRestriction->gr_price,
+                'sub_category_name' => $validated['main_category'],
+                'category_id' => $generalRestriction->category_id,
+                'product_name' => $generalRestriction->product_name,
+            ];
+            $newGeneralRestriction = GeneralRestriction::create($newRecord);
+
+            // Log the transfer history
+            $history = [
+                'from_general_restriction_id'=> $generalRestriction->id,
+                'to_general_restriction_id'=>$newGeneralRestriction->id,
+                'product_id' => $generalRestriction->product_id,
+                'gr_stock' => $transferAmount,
+                'gr_price' => $generalRestriction->gr_price,
+                'from_sub_category_name' => $generalRestriction->sub_category_name,
+                'to_sub_category_name' => $validated['main_category'],
+                'category_id' => $generalRestriction->category_id,
+                'product_name' => $generalRestriction->product_name,
+            ];
+            TransferHistory::create($history);
+            // Update original stock to remaining amount
+            $generalRestriction->update(['gr_stock' => $remainingStock]);
+            DB::commit();
+            return Redirect::back()->with('success', __('Stock transferred successfully.'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Log the error if needed: Log::error($e->getMessage());
+            return Redirect::back()->with('error', __('An error occurred during the stock transfer.'. $e->getMessage()));
+        }
+    }
+
+
     public function coolingRoomsBeiruitCheese(Request $request): View
     {
         $sub_category = "coolingRoomsBeiruit";
-        $category = Category::find($request->id); 
+        $category = Category::find($request->id);
         $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
-        return view("general_restrictions.cb_cheese",['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
+        return view("general_restrictions.cb_cheese", ['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
 
 
@@ -118,10 +179,10 @@ class GeneralRestrictionController extends Controller
         $category = Category::find($request->id);
         $main_category = 'warehouse';
         $products = Product::where('category_id', $request->id)
-        ->get();
+            ->get();
 
-        return view("general_restrictions.w_create",['category'=>$category, 'main_category'=>$main_category, 'products' => $products]);
-    } 
+        return view("general_restrictions.w_create", ['category' => $category, 'main_category' => $main_category, 'products' => $products]);
+    }
 
 
     // ------ Create Form for coolong rooms
@@ -130,10 +191,10 @@ class GeneralRestrictionController extends Controller
         $category = Category::find($request->id);
         $main_category = 'coolingRooms';
         $products = Product::where('category_id', $request->id)
-        ->get();
+            ->get();
 
-        return view("general_restrictions.c_create",['category'=>$category, 'main_category'=>$main_category, 'products' => $products]);
-    } 
+        return view("general_restrictions.c_create", ['category' => $category, 'main_category' => $main_category, 'products' => $products]);
+    }
 
 
 
@@ -147,8 +208,8 @@ class GeneralRestrictionController extends Controller
         $product = Product::where('id', $generalRestriction->product_id)->first();
 
 
-        return view("general_restrictions.w_edit",['generalRestriction' => $generalRestriction, 'category'=>$category, 'main_category'=>$main_category, 'product' => $product, 'products' => $products]);
-    } 
+        return view("general_restrictions.w_edit", ['generalRestriction' => $generalRestriction, 'category' => $category, 'main_category' => $main_category, 'product' => $product, 'products' => $products]);
+    }
 
 
     // ==== store both warehouse and cooling rooms 
@@ -189,11 +250,11 @@ class GeneralRestrictionController extends Controller
         $product->update([
             'main_category' => ""
         ]);
-    
+
         return Redirect::back()->with("success", __("Deleted"));
     }
 
-    
+
     // ==== Updating both warehouse and cooling rooms 
     public function update(Request $request, GeneralRestriction $generalRestriction): RedirectResponse
     {
@@ -221,5 +282,4 @@ class GeneralRestrictionController extends Controller
 
         return Redirect::back()->with("success", __("Updated"));
     }
-    
 }

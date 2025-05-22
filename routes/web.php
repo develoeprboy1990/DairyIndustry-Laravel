@@ -460,7 +460,7 @@ Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductCo
     Route::put('/general_restrictions/{generalRestriction}', [\App\Http\Controllers\GeneralRestrictionController::class, 'update'])->name('generalRestrictions.update');
     Route::delete('/general_restrictions/{generalRestriction}', [\App\Http\Controllers\GeneralRestrictionController::class, 'destroy'])->name('generalRestrictions.destroy');
 
-
+ Route::post('/general_restrictions/stocktransfer', [\App\Http\Controllers\GeneralRestrictionController::class, 'stockTransfer'])->name('generalRestrictions.stocktransfer');
 
     // White Cheese white_cheeses
     Route::get('/ingredients', [\App\Http\Controllers\IngredientController::class, 'index'])->name('ingredients.index');
