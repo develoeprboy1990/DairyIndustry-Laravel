@@ -18,7 +18,9 @@ class TransferHistory extends Model
         'product_id',
         'product_name',
         'gr_stock',
-        'gr_price'
+        'gr_price',
+        'driver_id',
+        'car_type_id'      
     ];
     protected $casts = [
         'gr_price' => 'float',
@@ -39,6 +41,18 @@ class TransferHistory extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
+
+     // NEW relationships
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class, 'driver_id');
+    }
+
+    public function carType()
+    {
+        return $this->belongsTo(CarType::class, 'car_type_id');
+    }
+
     public function fromSubCategory()
     {
         return $this->belongsTo(SubCategory::class, 'from_sub_category_name');
@@ -74,5 +88,16 @@ class TransferHistory extends Model
     public function getFromGeneralRestrictionStockAttribute()
     {
         return $this->fromGeneralRestriction ? $this->fromGeneralRestriction->gr_stock : null;
+    }
+
+    // NEW accessors
+    public function getDriverNameAttribute()
+    {
+        return $this->driver ? $this->driver->name : __('Not assigned');
+    }
+
+    public function getCarTypeNameAttribute()
+    {
+        return $this->carType ? $this->carType->full_name : __('Not assigned');
     }
 }

@@ -460,7 +460,7 @@ Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductCo
     Route::put('/general_restrictions/{generalRestriction}', [\App\Http\Controllers\GeneralRestrictionController::class, 'update'])->name('generalRestrictions.update');
     Route::delete('/general_restrictions/{generalRestriction}', [\App\Http\Controllers\GeneralRestrictionController::class, 'destroy'])->name('generalRestrictions.destroy');
 
- Route::post('/general_restrictions/stocktransfer', [\App\Http\Controllers\GeneralRestrictionController::class, 'stockTransfer'])->name('generalRestrictions.stocktransfer');
+    Route::post('/general_restrictions/stocktransfer', [\App\Http\Controllers\GeneralRestrictionController::class, 'stockTransfer'])->name('generalRestrictions.stocktransfer');
 
     // White Cheese white_cheeses
     Route::get('/ingredients', [\App\Http\Controllers\IngredientController::class, 'index'])->name('ingredients.index');
@@ -490,6 +490,25 @@ Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductCo
     Route::get('/stocks/salesman', [\App\Http\Controllers\StockController::class, 'salesman'])->name('stocks.salesman');
     Route::get('/stocks/purchase', [\App\Http\Controllers\StockController::class, 'purchase'])->name('stocks.purchase');
 
+    // Drivers Routes
+    Route::get('/drivers', [\App\Http\Controllers\DriverController::class, 'index'])->name('drivers.index');
+    Route::get('/drivers/create', [\App\Http\Controllers\DriverController::class, 'create'])->name('drivers.create');
+    Route::post('/drivers', [\App\Http\Controllers\DriverController::class, 'store'])->name('drivers.store');
+    Route::get('/drivers/{driver}', [\App\Http\Controllers\DriverController::class, 'show'])->name('drivers.show');
+    Route::get('/drivers/{driver}/edit', [\App\Http\Controllers\DriverController::class, 'edit'])->name('drivers.edit');
+    Route::put('/drivers/{driver}', [\App\Http\Controllers\DriverController::class, 'update'])->name('drivers.update');
+    Route::delete('/drivers/{driver}', [\App\Http\Controllers\DriverController::class, 'destroy'])->name('drivers.destroy');
+
+    // Car Types Routes
+    Route::get('/car-types', [\App\Http\Controllers\CarTypeController::class, 'index'])->name('car-types.index');
+    Route::get('/car-types/create', [\App\Http\Controllers\CarTypeController::class, 'create'])->name('car-types.create');
+    Route::post('/car-types', [\App\Http\Controllers\CarTypeController::class, 'store'])->name('car-types.store');
+    Route::get('/car-types/{carType}', [\App\Http\Controllers\CarTypeController::class, 'show'])->name('car-types.show');
+    Route::get('/car-types/{carType}/edit', [\App\Http\Controllers\CarTypeController::class, 'edit'])->name('car-types.edit');
+    Route::put('/car-types/{carType}', [\App\Http\Controllers\CarTypeController::class, 'update'])->name('car-types.update');
+    Route::delete('/car-types/{carType}', [\App\Http\Controllers\CarTypeController::class, 'destroy'])->name('car-types.destroy');
+
+    Route::get('/transfer-history', [\App\Http\Controllers\GeneralRestrictionController::class, 'transferHistory'])->name('generalRestrictions.transferHistory');
 
 
 

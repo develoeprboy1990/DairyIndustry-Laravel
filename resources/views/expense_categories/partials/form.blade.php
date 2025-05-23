@@ -20,7 +20,7 @@
         value="{{ old('sort_order', isset($expenseCategory) ? $expenseCategory->sort_order : '') }}" />
 
     <div class="mb-3">
-        <label for="status" class="form-label">@lang('Status')</label>
+        <label for="status" class="form-label">@lang('Status_1')</label>
         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status">
             @isset($expenseCategory)
                 <option value="1" @if ($expenseCategory->is_active) selected @endif>@lang('Active')</option>
