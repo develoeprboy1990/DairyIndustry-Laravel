@@ -128,7 +128,6 @@ class GeneralRestrictionController extends Controller
             'driver_id' => 'nullable|exists:drivers,id',        // ADD THIS
             'car_type_id' => 'nullable|exists:car_types,id',    // ADD THIS
         ]);
-        
         try {
             DB::beginTransaction();
             $generalRestriction = GeneralRestriction::findOrFail($validated['id']);
