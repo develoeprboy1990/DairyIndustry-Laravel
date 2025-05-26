@@ -10,6 +10,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Driver;       
+use App\Models\CarType;      
 
 use Illuminate\Support\Facades\DB; 
 
@@ -97,23 +99,34 @@ class GeneralRestrictionController extends Controller
 
         return view("general_restrictions.w_cheese", ['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
     }
+
     public function coolingRoomsCheese(Request $request): View
     {
         $sub_category = "coolingRooms";
         $category = Category::find($request->id);
         $generalRestrictions = GeneralRestriction::where('sub_category_name', $sub_category)->where('category_id', $request->id)->get();
 
-        return view("general_restrictions.c_cheese", ['generalRestrictions' => $generalRestrictions, 'category' =>  $category]);
-    }
+        // ADD THESE LINES - Get active drivers and available car types for the modal
+        $drivers = Driver::active()->orderBy('name')->get();
+        $carTypes = CarType::available()->orderBy('name')->get();
 
+        return view("general_restrictions.c_cheese", [
+            'generalRestrictions' => $generalRestrictions, 
+            'category' => $category,
+            'drivers' => $drivers,         // ADD THIS
+            'carTypes' => $carTypes        // ADD THIS
+        ]);
+    }
  
     public function stockTransfer(Request $request): \Illuminate\Http\RedirectResponse
     {
-        // Validate inputs
+        // UPDATED VALIDATION - Add new fields
         $validated = $request->validate([
             'id' => 'required|exists:general_restrictions,id',
             'gr_stock' => 'required|integer|min:1',
-            'main_category' => 'required|string|max:255',  // adjust rules as per your model
+            'main_category' => 'required|string|max:255',
+            'driver_id' => 'nullable|exists:drivers,id',        // ADD THIS
+            'car_type_id' => 'nullable|exists:car_types,id',    // ADD THIS
         ]);
         try {
             DB::beginTransaction();
@@ -137,10 +150,10 @@ class GeneralRestrictionController extends Controller
             ];
             $newGeneralRestriction = GeneralRestriction::create($newRecord);
 
-            // Log the transfer history
+            // UPDATED HISTORY RECORD - Include driver and car type
             $history = [
-                'from_general_restriction_id'=> $generalRestriction->id,
-                'to_general_restriction_id'=>$newGeneralRestriction->id,
+                'from_general_restriction_id' => $generalRestriction->id,
+                'to_general_restriction_id' => $newGeneralRestriction->id,
                 'product_id' => $generalRestriction->product_id,
                 'gr_stock' => $transferAmount,
                 'gr_price' => $generalRestriction->gr_price,
@@ -148,19 +161,31 @@ class GeneralRestrictionController extends Controller
                 'to_sub_category_name' => $validated['main_category'],
                 'category_id' => $generalRestriction->category_id,
                 'product_name' => $generalRestriction->product_name,
+                'driver_id' => $validated['driver_id'],           // ADD THIS
+                'car_type_id' => $validated['car_type_id'],       // ADD THIS
             ];
             TransferHistory::create($history);
+            
             // Update original stock to remaining amount
             $generalRestriction->update(['gr_stock' => $remainingStock]);
             DB::commit();
             return Redirect::back()->with('success', __('Stock transferred successfully.'));
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log the error if needed: Log::error($e->getMessage());
-            return Redirect::back()->with('error', __('An error occurred during the stock transfer.'. $e->getMessage()));
+            return Redirect::back()->with('error', __('An error occurred during the stock transfer.' . $e->getMessage()));
         }
     }
 
+    public function transferHistory(Request $request): View
+    {
+        $transferHistories = TransferHistory::with(['driver', 'carType', 'product', 'category'])
+                                        ->orderBy('created_at', 'desc')
+                                        ->paginate(20);
+
+        return view("general_restrictions.transfer_history", [
+            'transferHistories' => $transferHistories
+        ]);
+    }
 
     public function coolingRoomsBeiruitCheese(Request $request): View
     {

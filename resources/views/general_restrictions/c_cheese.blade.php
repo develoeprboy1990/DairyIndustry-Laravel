@@ -41,7 +41,9 @@
                                     <li>
                                         <a class="dropdown-item transfer" data-bs-toggle="modal" data-bs-target="#filterModal"
                                             data-href="{{ route('generalRestrictions.wedit', $generalRestriction) }}"
-                                            data-id="{{ $generalRestriction->id }}" data-itemstock="{{ $generalRestriction->gr_stock }}">
+                                            data-id="{{ $generalRestriction->id }}" 
+                                            data-itemstock="{{ $generalRestriction->gr_stock }}"
+                                            data-itemname="{{ $generalRestriction->product_name }}">
                                             @lang('Transfer')
                                         </a>
                                     </li>
@@ -90,18 +92,56 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('generalRestrictions.stocktransfer') }}" method="POST" role="form">
-
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" name="id" id="id" value="">
+                    
+                    <!-- Item Name Display -->
                     <div class="mb-3">
-                        <label for="gr_stock" class="form-label">@lang('Item Stock')</label>
-                        <input type="number" class="form-control" id="gr_stock" name="gr_stock" value="">
+                        <label for="item_name_display" class="form-label">@lang('Item Name')</label>
+                        <input type="text" class="form-control" id="item_name_display" readonly>
                     </div>
+                    
+                    <!-- Transfer Stock -->
                     <div class="mb-3">
-                        <label for="main_category" class="form-label">@lang('Transfer To Category')</label>
-                        <select class="form-select " id="main_category" name="main_category">
-                            <option value="coolingRoomsBeiruit">Cooling Rooms Beiruit</option>
+                        <label for="gr_stock" class="form-label">@lang('Transfer Quantity')</label>
+                        <input type="number" class="form-control" id="gr_stock" name="gr_stock" min="1" required>
+                        <div class="form-text">@lang('Available Stock'): <span id="available_stock"></span></div>
+                    </div>
+                    
+                    <!-- Driver Selection -->
+                    <div class="mb-3">
+                        <label for="driver_id" class="form-label">@lang('Select Driver')</label>
+                        <select class="form-select" id="driver_id" name="driver_id">
+                            <option value="">@lang('Select Driver (Optional)')</option>
+                            @isset($drivers)
+                                @foreach($drivers as $driver)
+                                    <option value="{{ $driver->id }}">{{ $driver->name }} 
+                                        @if($driver->phone) - {{ $driver->phone }} @endif
+                                    </option>
+                                @endforeach
+                            @endisset
+                        </select>
+                    </div>
+                    
+                    <!-- Car Type Selection -->
+                    <div class="mb-3">
+                        <label for="car_type_id" class="form-label">@lang('Select Vehicle')</label>
+                        <select class="form-select" id="car_type_id" name="car_type_id">
+                            <option value="">@lang('Select Vehicle (Optional)')</option>
+                            @isset($carTypes)
+                                @foreach($carTypes as $carType)
+                                    <option value="{{ $carType->id }}">{{ $carType->full_name }}</option>
+                                @endforeach
+                            @endisset
+                        </select>
+                    </div>
+                    
+                    <!-- Transfer Destination -->
+                    <div class="mb-3">
+                        <label for="main_category" class="form-label">@lang('Transfer To')</label>
+                        <select class="form-select" id="main_category" name="main_category" required>
+                            <option value="coolingRoomsBeiruit">@lang('Cooling Rooms Beirut')</option>
                         </select>
                     </div>
                 </div>
@@ -125,14 +165,32 @@
             }
         });
     }
+    
     $(document).ready(function() {
         $('#filterModal').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget); // Button that triggered the modal
-            var href = button.data('href'); // Extract info from data-* attributes
             var modal = $(this);
-            //modal.find('.modal-content form').attr('action', href);
+            
+            // Set the form values
             modal.find('.modal-body #id').val(button.data('id'));
-            modal.find('.modal-body #gr_stock').val(button.data('itemstock'));
+            modal.find('.modal-body #gr_stock').attr('max', button.data('itemstock'));
+            modal.find('.modal-body #available_stock').text(button.data('itemstock'));
+            modal.find('.modal-body #item_name_display').val(button.data('itemname'));
+            
+            // Reset dropdowns
+            modal.find('.modal-body #driver_id').val('');
+            modal.find('.modal-body #car_type_id').val('');
+            modal.find('.modal-body #gr_stock').val('');
+        });
+        
+        // Validate stock input
+        $('#gr_stock').on('input', function() {
+            var maxStock = parseInt($(this).attr('max'));
+            var currentValue = parseInt($(this).val());
+            
+            if (currentValue > maxStock) {
+                $(this).val(maxStock);
+            }
         });
     });
 </script>

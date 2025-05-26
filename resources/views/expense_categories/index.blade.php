@@ -19,7 +19,7 @@
                 <tr>
                     <x-th>@lang('Expense Category Name')</x-th>
                     <x-th>@lang('Sort Order')</x-th>
-                    <x-th>@lang('Status')</x-th>
+                    <x-th>@lang('Status_1')</x-th>
                     <x-th></x-th>
                 </tr>
             </x-thead>
