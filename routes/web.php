@@ -462,6 +462,8 @@ Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductCo
 
     Route::post('/general_restrictions/stocktransfer', [\App\Http\Controllers\GeneralRestrictionController::class, 'stockTransfer'])->name('generalRestrictions.stocktransfer');
 
+    Route::get('/general_restrictions/transfer-history', [\App\Http\Controllers\GeneralRestrictionController::class, 'transferHistory'])->name('generalRestrictions.transferHistory');
+
     // White Cheese white_cheeses
     Route::get('/ingredients', [\App\Http\Controllers\IngredientController::class, 'index'])->name('ingredients.index');
     // Route::post('/ingredients', [\App\Http\Controllers\IngredientController::class, 'store'])->name('ingredients.store');
@@ -508,7 +510,6 @@ Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductCo
     Route::put('/car-types/{carType}', [\App\Http\Controllers\CarTypeController::class, 'update'])->name('car-types.update');
     Route::delete('/car-types/{carType}', [\App\Http\Controllers\CarTypeController::class, 'destroy'])->name('car-types.destroy');
 
-    Route::get('/transfer-history', [\App\Http\Controllers\GeneralRestrictionController::class, 'transferHistory'])->name('generalRestrictions.transferHistory');
 
 
 

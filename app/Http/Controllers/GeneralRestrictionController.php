@@ -117,18 +117,6 @@ class GeneralRestrictionController extends Controller
             'carTypes' => $carTypes        // ADD THIS
         ]);
     }
-
-    public function transferHistory(Request $request): View
-    {
-        $transferHistories = TransferHistory::with(['driver', 'carType', 'product', 'category'])
-                                        ->orderBy('created_at', 'desc')
-                                        ->paginate(20);
-
-        return view("general_restrictions.transfer_history", [
-            'transferHistories' => $transferHistories
-        ]);
-    }
-
  
     public function stockTransfer(Request $request): \Illuminate\Http\RedirectResponse
     {
@@ -189,6 +177,16 @@ class GeneralRestrictionController extends Controller
         }
     }
 
+    public function transferHistory(Request $request): View
+    {
+        $transferHistories = TransferHistory::with(['driver', 'carType', 'product', 'category'])
+                                        ->orderBy('created_at', 'desc')
+                                        ->paginate(20);
+
+        return view("general_restrictions.transfer_history", [
+            'transferHistories' => $transferHistories
+        ]);
+    }
 
     public function coolingRoomsBeiruitCheese(Request $request): View
     {
