@@ -6,11 +6,10 @@
          <div class="col-md-12 d-flex align-items-stretch">
              <x-card class="mb-3">
 
-              <div class="row">
-                     <div class="col-md-6 d-flex align-items-stretch">
-                         <x-number-input label="Item Name" name="name"
-                             value="{{ old('name', optional($expiredProduct->product)->name ?? 'N/A') }}" />
-                     </div> 
+                 <div class="row mb-100 ">
+                     <div class="col-md-6 d-flex align-items-stretch mb-4">
+                         <h3> {{ optional($expiredProduct->product)->name ?? 'N/A' }}</h3>
+                     </div>
                  </div>
 
                  <div class="row">
