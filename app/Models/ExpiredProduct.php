@@ -27,8 +27,9 @@ class ExpiredProduct extends Model
         'reproduce' => 'boolean',
     ];
 
+    // In App\Models\ExpiredProduct.php
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Product::class, 'product_id', 'id'); // Explicitly set UUID keys
     }
 }

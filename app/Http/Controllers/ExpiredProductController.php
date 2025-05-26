@@ -32,12 +32,9 @@ class ExpiredProductController extends Controller
     {
         // Fetch the expired product by ID
         $expiredProduct = ExpiredProduct::findOrFail($id);
-
         // Fetch the product linked to this expired product
         $product = $expiredProduct->product;
-
         $categories = Category::orderBy('sort_order', 'ASC')->get();
-
         return view('expired-products.reproduce', compact('expiredProduct', 'product', 'categories'));
     }
 
@@ -47,10 +44,8 @@ class ExpiredProductController extends Controller
         try {
             // Begin a transaction
             DB::beginTransaction();
-
             // Find the expired product entry
             $expiredProduct = ExpiredProduct::findOrFail($id);
-
             // Validate and update the original product
             $product = Product::find($expiredProduct->product_id);
             if ($product) {
@@ -199,32 +194,52 @@ class ExpiredProductController extends Controller
             // Handle the case where the product doesn't exist
             return Redirect::back()->withErrors(__("Associated expired product not found."));
         }
-
-
-
         return redirect()->route('products.index')->with("success", __("Expired Products successfully reproduced"));
     }
 
 
     public function edit(ExpiredProduct $expiredProduct)
-    {
+    {    // Eager-load the product relationship
+        $expiredProduct->load([
+            'product' => function ($query) {
+                $query->withTrashed();
+            }
+        ]);
+
         return view('expired-products.edit', compact('expiredProduct'));
     }
     public function update(Request $request, ExpiredProduct $expiredProduct)
     {
-        $request->validate([
-            'product_id' => 'nullable|string|max:36',
-            'expired_stock' => 'required|numeric|min:0',
-            'conversion_rate' => 'nullable|numeric|min:0',
-            'expiry_date' => 'required|date',
-            'trash' => 'boolean',
-            'reproduce' => 'boolean',
-        ]);
+        try {
+            // Validate input
+            $validated = $request->validate([
+                'expired_stock' => 'required|numeric|min:0',
+                'expiry_date' => 'required|date'
+            ]);
 
-        $expiredProduct->update($request->all());
+            // Update the expired product
+            $expiredProduct->update([
+                'expired_stock' => $validated['expired_stock'],
+                'expiry_date' => $validated['expiry_date']
+            ]);
 
-        return redirect()->route('expired-products.index')->with('success', 'Expired product updated successfully.');
+            return redirect()->route('expired-products.index')
+                ->with('success', 'Expired product updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors (Laravel handles this automatically, so this catch is optional)
+            return back()->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            // Log unexpected errors
+            \Log::error('Expired Product Update Error', [
+                'error' => $e->getMessage(),
+                'expired_product_id' => $expiredProduct->id ?? null
+            ]);
+
+            return back()->with('error', 'An error occurred while updating the expired product. Please try again.')
+                ->withInput();
+        }
     }
+
 
     public function destroy(ExpiredProduct $expiredProduct)
     {

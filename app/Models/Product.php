@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\Cheese;
 
 use App\Traits\HasImage;
@@ -18,6 +19,10 @@ use App\Models\MounehIndustry;
 class Product extends Model
 {
     use HasFactory, SoftDeletes, HasUuid, HasImage, HasStatus;
+
+
+    public $incrementing = false; // Disable auto-incrementing (since UUID is used)
+    protected $keyType = 'string'; // Set key type as string for UUID
 
     /**
      * The attributes that are mass assignable.
@@ -53,10 +58,10 @@ class Product extends Model
         'expired_stock',
         'track_stock',
         'continue_selling_when_out_of_stock',
-        'box_price', 
-        'unit_price', 
-        'box_barcode', 
-        'unit_barcode', 
+        'box_price',
+        'unit_price',
+        'box_barcode',
+        'unit_barcode',
         'box_sku',
         'unit_sku',
         'wholesale_price',
@@ -99,106 +104,106 @@ class Product extends Model
         'continue_selling_when_out_of_stock' => 'boolean',
         'plastic_bucket_stock' => 'array',
     ];
-    
+
     public function categories()
     {
         return $this->belongsToMany(Category::class);
     }
-    
+
     // Declare the relationship with the MounehIndustry model
     public function mounehIndustries()
     {
         return $this->hasMany(MounehIndustry::class, 'product_id', 'id');
     }
-    
-    
+
+
     //add this part:  Declare the relationship with the DairyIndustries model
     public function dairyIndustries()
     {
         return $this->hasMany(DairyIndustry::class, 'product_id', 'id');
     }
-    
-    
-    
+
+
+
     // Declare the relationship with the MounehIndustry model
     public function cheeses()
     {
         return $this->hasMany(Cheese::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the CheeseProcess1 model
     public function cheeseProcesses()
     {
         return $this->hasMany(CheeseProcess1::class, 'product_id', 'id');
     }
-    
+
     // Declare the relationship with the GoudaRegular model
     public function goudaRegulars()
     {
         return $this->hasMany(GoudaRegular1::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the Kishek model
     public function kishekes()
     {
         return $this->hasMany(Kishek::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the LabanProcess1 model
     public function labanProcesses()
     {
         return $this->hasMany(LabanProcess1::class, 'product_id', 'id');
     }
-    
+
     // Declare the relationship with the LabnehProcess1 model
     public function labnehProcesses()
     {
         return $this->hasMany(LabnehProcess1::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the Margarine model
     public function margarines()
     {
         return $this->hasMany(Margarine::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the LeComte1 model
     public function leComtes()
     {
         return $this->hasMany(LeComte1::class, 'product_id', 'id');
     }
-    
+
     // Declare the relationship with the Raclette1 model
     public function raclette1s()
     {
         return $this->hasMany(Raclette1::class, 'product_id', 'id');
     }
-    
+
     // Declare the relationship with the Serum model
     public function serums()
     {
         return $this->hasMany(Serum::class, 'product_id', 'id');
     }
-    
+
     // Declare the relationship with the Shankleesh model
     public function shankleeshes()
     {
         return $this->hasMany(Shankleesh::class, 'product_id', 'id');
     }
-    
-    
+
+
     // Declare the relationship with the Tomme1 model
     public function tommes()
     {
         return $this->hasMany(Tomme1::class, 'product_id', 'id');
     }
-    
-    
+
+
 
     /**
      * Scope a query to search posts
@@ -256,7 +261,7 @@ class Product extends Model
         return '';
     }
 
-    
+
     // public function getTableSalesViewPriceAttribute(): string
     // {
     //     $hasExchangeRate = config('settings')->enableExchangeRateForItems;
@@ -269,7 +274,7 @@ class Product extends Model
     //     // return currency_format($this->sale_price * $this->in_stock, $hasExchangeRate);
     //     return currency_format($this->retailsale_price * $this->in_stock, $hasExchangeRate);
     // }
-    
+
     public function getTableWholesaleViewPriceAttribute(): string
     {
         $hasExchangeRate = config('settings')->enableExchangeRateForItems;
@@ -299,7 +304,7 @@ class Product extends Model
         return currency_format($this->price_per_gram * $this->in_stock, $hasExchangeRate);
     }
 
-     /**
+    /**
      * Get the price per kilogram
      * 
      * @return string
@@ -327,7 +332,7 @@ class Product extends Model
         // return currency_format($this->sale_price * $this->in_stock, $hasExchangeRate);
         return currency_format($this->unit_price * $this->in_stock, $hasExchangeRate);
     }
-    
+
 
     public function getTableBoxViewPriceAttribute(): string
     {
@@ -340,7 +345,7 @@ class Product extends Model
         }
         return currency_format($this->box_price, $hasExchangeRate);
     }
-    
+
     public function getTableBoxViewWholepriceAttribute(): string
     {
         $hasExchangeRate = config('settings')->enableExchangeRateForItems;
@@ -352,7 +357,7 @@ class Product extends Model
         }
         return currency_format($this->box_price * $this->in_stock / $this->count_per_box, $hasExchangeRate);
     }
-    
+
     public function getWholeCostAttribute(): string
     {
         $hasExchangeRate = config('settings')->enableExchangeRateForItems;
@@ -364,7 +369,7 @@ class Product extends Model
         }
         return currency_format($this->cost * $this->in_stock, $hasExchangeRate);
     }
-    
+
     /**
      * Get the price.
      *
@@ -431,7 +436,7 @@ class Product extends Model
         return currency_format($this->unit_price, $hasExchangeRate);
         // return currency_format($this->sale_price, $hasExchangeRate);
     }
-    
+
     public function getTableViewCostAttribute(): string
     {
         $hasExchangeRate = !config('settings')->enableExchangeRateForItems;

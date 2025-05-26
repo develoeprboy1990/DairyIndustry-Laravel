@@ -70,8 +70,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/expired-product/{id}/reproduce', [\App\Http\Controllers\ExpiredProductController::class, 'reproduceForm'])->name('expired-products.reproduce.form');
     Route::post('/expired-product/reproduce', [\App\Http\Controllers\ExpiredProductController::class, 'reproduce'])->name('expired-products.reproduce');
 
-Route::get('/expired-product/{id}/edit', [\App\Http\Controllers\ExpiredProductController::class, 'edit'])->name('expired-products.edit');
-    Route::post('/expired-product/update', [\App\Http\Controllers\ExpiredProductController::class, 'update'])->name('expired-products.update');
+Route::get('/expired-product/{expiredProduct}/edit', [\App\Http\Controllers\ExpiredProductController::class, 'edit'])->name('expired-products.edit');
+
+    Route::put('/expired-products/{expiredProduct}', [\App\Http\Controllers\ExpiredProductController::class, 'update'])->name('expired-products.update');
 
     Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers.index');
     Route::post('/customers', [\App\Http\Controllers\CustomerController::class, 'store'])->name('customers.store');
