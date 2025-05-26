@@ -115,7 +115,6 @@ class GeneralRestrictionController extends Controller
             'gr_stock' => 'required|integer|min:1',
             'main_category' => 'required|string|max:255',  // adjust rules as per your model
         ]);
-//dd($validated);
         try {
             DB::beginTransaction();
             $generalRestriction = GeneralRestriction::findOrFail($validated['id']);
