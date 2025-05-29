@@ -268,15 +268,30 @@ class GeneralRestrictionController extends Controller
 
 
     // ==== Removing both warehouse and cooling rooms 
-    public function wdestroy(Product $product): RedirectResponse
-    {
-        $product = Product::find($product->id);
-        $product->update([
-            'main_category' => ""
-        ]);
+    public function destroy(GeneralRestriction $generalRestriction): RedirectResponse
+{
+    try {
+        // Get the product_id before deleting
+        $productId = $generalRestriction->product_id;
+        
+        // Delete the GeneralRestriction record
+        $generalRestriction->delete();
+        
+        // Try to update the product only if it still exists
+        $product = Product::find($productId);
+        if ($product) {
+            $product->update([
+                'main_category' => ""
+            ]);
+        }
+        // If product doesn't exist, that's fine - just continue
 
         return Redirect::back()->with("success", __("Deleted"));
+        
+    } catch (\Exception $e) {
+        return Redirect::back()->with("error", __("An error occurred while deleting the record: " . $e->getMessage()));
     }
+}
 
 
     // ==== Updating both warehouse and cooling rooms 

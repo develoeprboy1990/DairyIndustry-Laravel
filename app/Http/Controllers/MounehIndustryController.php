@@ -53,6 +53,9 @@ class MounehIndustryController extends Controller
          // Fetch the category where name is 'mouneh'
         // $mounehCategory = Category::where('name', 'Lvb mouneh industry')->first();
         $mounehCategory = Category::where('is_active', 1)->get();
+
+         // ADD THIS LINE
+        $existingProducts = Product::whereHas('mounehIndustries')->with('category')->get();
     
         // // Handle case if 'mouneh' category is not found
         // if (!$mounehCategory) {
@@ -65,7 +68,8 @@ class MounehIndustryController extends Controller
         return view("mounehindustries.create", [
             'mounehCategory' => $mounehCategory, // Pass the 'mouneh' category
             'isNextPhaseChecked' => $isNextPhaseChecked,
-            'plasticBuckets' => $plasticBuckets
+            'plasticBuckets' => $plasticBuckets,
+            'existingProducts' => $existingProducts // ADD THIS LINE
         ]);
     }
 
@@ -75,7 +79,7 @@ class MounehIndustryController extends Controller
      * @param  \App\Http\Requests\StoreMounehIndustryRequest  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(StoreMounehIndustryRequest $request): RedirectResponse
+    public function storeXXX(StoreMounehIndustryRequest $request): RedirectResponse
     {
    
         $mounehIndustry = new MounehIndustry();
@@ -230,6 +234,222 @@ class MounehIndustryController extends Controller
 
         return Redirect::back()->with("success", __("Created"));
     }
+
+    public function store(StoreMounehIndustryRequest $request): RedirectResponse
+{
+    $mounehIndustry = new MounehIndustry();
+    $mounehIndustry->type_of_mouneh = $request->type_of_mouneh;
+    $mounehIndustry->quantity_of_fruit_vegetable = $request->quantity_of_fruit_vegetable;
+    $mounehIndustry->quantity_of_sugar_salt = $request->quantity_of_sugar_salt;
+    $mounehIndustry->quantity_of_acid = $request->quantity_of_acid;
+    $mounehIndustry->cheese_qty = $request->cheese_qty;
+    $mounehIndustry->water_qty = $request->water_qty;
+    $mounehIndustry->citricAcid_qty = $request->citricAcid_qty;
+    $mounehIndustry->final_quantity = $request->final_quantity;
+
+    // Check if the "next_phase" checkbox is checked, and create/update Product
+    if ($request->next_phase) {
+        // CONDITIONAL VALIDATION BASED ON PRODUCT OPTION
+        if ($request->existing_product_id) {
+            // Minimal validation for existing product
+            $validatedProductData = $request->validate([
+                'existing_product_id' => ['required', 'exists:products,id'],
+                'in_stock' => ['nullable', 'numeric'],
+                'cost' => ['nullable', 'numeric', 'min:0'],
+                'expiry_date' => ['nullable', 'date'],
+            ]);
+        } else {
+            // Full validation for new product
+            $validatedProductData = $request->validate([
+                'name' => ['required', 'string', 'max:100'],
+                'wholesale_price' => ['nullable', 'numeric', 'min:0'],
+                'box_price' => ['nullable', 'numeric', 'min:0'],
+                'unit_price' => ['nullable', 'numeric', 'min:0'],
+                'cost' => ['nullable', 'numeric', 'min:0'],
+                'sort_order' => ['nullable', 'numeric', 'min:0'],
+                'image' => ['nullable', 'mimes:jpeg,jpg,png', 'max:2024'],
+                'description' => ['nullable', 'string', 'max:2000'],
+                'box_barcode' => ['nullable', 'string', 'max:43'],
+                'unit_barcode' => ['nullable', 'string', 'max:43'],
+                'superdealer_barcode' => ['nullable', 'string', 'max:43'],
+                'wholesale_barcode' => ['nullable', 'string', 'max:43'],
+                'box_sku' => ['nullable', 'string', 'max:64'],
+                'unit_sku' => ['nullable', 'string', 'max:64'],
+                'superdealer_sku' => ['nullable', 'string', 'max:64'],
+                'wholesale_sku' => ['nullable', 'string', 'max:64'],
+                'status' => ['required', 'string'],
+                'in_stock' => ['nullable', 'numeric'],
+                'category' => ['required', 'string'],
+                'length' => ['nullable', 'numeric', 'min:0'],
+                'width' => ['nullable', 'numeric', 'min:0'],
+                'color' => ['nullable', 'string', 'max:200'],
+                'type' => ['nullable', 'string', 'max:200'],
+                'count_per_box' => ['required', 'numeric', 'min:1'],
+                'expiry_date' => ['required', 'date'],
+                'cost_unit' => ['nullable', 'string'],
+                'bos_unit' => ['nullable', 'string'],
+                'weight' => ['nullable', 'string'],
+                'minimum_stock' => ['required', 'numeric', 'min:0'],
+                'plastic_bucket_stock' => ['required', 'array'],
+                'plastic_bucket_stock.*' => ['nullable', 'numeric', 'min:0'],
+                'main_category' => ['nullable', 'string'],
+            ]);
+        }
+
+        $newBucketStocks = $request->plastic_bucket_stock ?? [];
+        $request->plastic_bucket_stock = json_encode($request->plastic_bucket_stock ?? []);
+        
+        // PRODUCT LOGIC: Check existing product first, then create/update
+        if ($request->existing_product_id) {
+            // Option 1: User manually selected existing product
+            $product = Product::find($request->existing_product_id);
+            
+            // Add new stock to existing stock
+            $product->in_stock += $request->in_stock ?? 0;
+            
+            // Update cost (could be average or latest cost)
+            $product->cost = $request->cost ?? $product->cost;
+            $product->expiry_date = $request->expiry_date ?? $product->expiry_date;
+            $product->save();
+            
+            $mounehIndustry->product_id = $product->id;
+            
+        } else {
+            // Option 2: Check if product with same name already exists (Auto-combine)
+            $existingProduct = Product::where('name', $request->name)
+                                     ->where('category_id', $request->category)
+                                     ->first();
+            
+            if ($existingProduct) {
+                // COMBINE WITH EXISTING PRODUCT
+                $existingProduct->in_stock += $request->in_stock ?? 0;
+                
+                // Update cost (use weighted average or latest cost)
+                $existingProduct->cost = $request->cost ?? $existingProduct->cost;
+                $existingProduct->expiry_date = $request->expiry_date ?? $existingProduct->expiry_date;
+                $existingProduct->save();
+                
+                $mounehIndustry->product_id = $existingProduct->id;
+                $product = $existingProduct; // For later use
+                
+            } else {
+                // CREATE NEW PRODUCT
+                $box_price = 0;
+                $unit_price = 0;
+                if ($request->box_price === null && $request->unit_price !== null) {
+                    $box_price = $request->unit_price * $request->count_per_box;
+                    $unit_price = $request->unit_price;
+                } else if ($request->box_price !== null && $request->unit_price === null) {
+                    $unit_price = $request->box_price / $request->count_per_box;
+                    $box_price = $request->box_price;
+                } else if ($request->box_price !== null && $request->unit_price !== null) {
+                    $box_price = $request->box_price;
+                    $unit_price = $request->unit_price;
+                }
+
+                $product = Product::create([
+                    'name' => $request->name,
+                    'sort_order' => $request->sort_order ?? 1,
+                    'is_active' => ($request->status === 'available') ? 1 : 0,
+                    'wholesale_price' => $request->wholesale_price ?? 0,
+                    'box_price' => $box_price ?? 0,
+                    'unit_price' => $unit_price ?? 0,
+                    'cost' => $request->cost ?? 0,
+                    'description' => $request->description,
+                    'box_barcode' => $request->box_barcode,
+                    'unit_barcode' => $request->unit_barcode,
+                    'superdealer_barcode' => $request->superdealer_barcode,
+                    'wholesale_barcode' => $request->wholesale_barcode,
+                    'box_sku' => $request->box_sku,
+                    'unit_sku' => $request->unit_sku,
+                    'superdealer_sku' => $request->superdealer_sku,
+                    'wholesale_sku' => $request->wholesale_sku,
+                    'category_id' => $request->category,
+                    'in_stock' => $request->in_stock ?? 0,
+                    'track_stock' => $request->has('track_stock'),
+                    'continue_selling_when_out_of_stock' => $request->has('continue_selling_when_out_of_stock'),
+                    'count_per_box' => $request->count_per_box ?? 10,
+                    'expiry_date' => $request->expiry_date,
+                    'cost_unit' => $request->cost_unit,
+                    'box_unit' => $request->box_unit,
+                    'weight' => $request->weight,
+                    'minimum_stock' => $request->minimum_stock ?? 0,
+                    'plastic_bucket_stock' => $request->plastic_bucket_stock,
+                    'main_category' => $request->main_category
+                ]);
+            
+                if ($request->hasFile('image')) {
+                    $product->updateImage($request->file('image'));
+                }
+
+                $mounehIndustry->product_id = $product->id;
+            }
+        }
+
+        // Update Plastic Buckets
+        foreach ($newBucketStocks as $bucketId => $additionalStock) {
+            if ($additionalStock > 0) {
+                $bucket = PlasticBucket::find($bucketId);
+                if ($bucket) {
+                    $bucket->stock += $additionalStock;
+                    $bucket->save();
+                }
+            }
+        }
+
+        // Handle GeneralRestriction (Warehouse locations)
+        if ($request->main_category) {
+            $generalRestriction = GeneralRestriction::where('product_id', $product->id)
+                                                ->where('sub_category_name', $request->main_category)
+                                                ->first();
+            
+            if ($generalRestriction) {
+                // FIXED: Add new stock to existing restriction stock
+                $generalRestriction->gr_stock += $request->in_stock ?? 0;
+                $generalRestriction->gr_price = $request->cost ?? $generalRestriction->gr_price;
+                $generalRestriction->product_name = $product->name; // Update name in case it changed
+                $generalRestriction->save();
+            } else {
+                // Create new restriction
+                $generalRestriction = new GeneralRestriction();
+                $generalRestriction->sub_category_name = $request->main_category;
+                $generalRestriction->category_id = $request->category;
+                $generalRestriction->product_id = $product->id; 
+                $generalRestriction->product_name = $product->name;
+                $generalRestriction->gr_stock = $request->in_stock ?? 0;
+                $generalRestriction->gr_price = $request->cost;
+                $generalRestriction->save(); 
+            }
+        } else {
+            // If no main_category selected, still need to update if restriction exists
+            $generalRestriction = GeneralRestriction::where('product_id', $product->id)->first();
+            if ($generalRestriction) {
+                $generalRestriction->gr_stock += $request->in_stock ?? 0;
+                $generalRestriction->save();
+            }
+        }
+        
+    } else {
+        // If next_phase checkbox is not checked, set product_id to null
+        $mounehIndustry->product_id = null;
+    }
+    
+    $mounehIndustry->save();
+
+    // Update Global Ingredients Inventory (Production tracking)
+    $ingredient = Ingredient::first();
+    if ($ingredient) {
+        $ingredient->quantity_of_milk -= ($request->quantity_of_fruit_vegetable ?? 0);
+        $ingredient->quantity_of_swedish_powder -= ($request->quantity_of_sugar_salt ?? 0);
+        $ingredient->quantity_of_ACC_butter -= ($request->quantity_of_acid ?? 0);
+        $ingredient->quantity_of_cheese -= ($request->cheese_qty ?? 0);
+        $ingredient->quantity_of_citriv_acid -= ($request->citricAcid_qty ?? 0);
+        $ingredient->quantity_of_water -= ($request->water_qty ?? 0);
+        $ingredient->save();
+    }
+
+    return Redirect::back()->with("success", __("Production batch created and stock updated"));
+}
 
     /**
      * Show the form for editing the specified resource.

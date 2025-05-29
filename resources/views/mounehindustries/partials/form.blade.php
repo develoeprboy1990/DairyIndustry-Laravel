@@ -20,7 +20,8 @@
         <label for="type_of_mouneh" class="form-label">@lang('Type of Cheese') (*)</label>
         <input type="text" name="type_of_mouneh" class="form-control @error('type_of_mouneh') is-invalid @enderror"
             id="type_of_mouneh"
-            value="{{ old('type_of_mouneh', isset($mounehIndustry) ? $mounehIndustry->type_of_mouneh : '') }}">
+            value="{{ old('type_of_mouneh', isset($mounehIndustry) ? $mounehIndustry->type_of_mouneh : 'Bulgarian Cheese') }}" 
+            readonly>
         @error('type_of_mouneh')
             <div class="invalid-feedback">
                 {{ $message }}
@@ -123,6 +124,41 @@
         <input type="checkbox" id="next_phase" class="form-check-input" name="next_phase"
             {{ $isNextPhaseChecked ? 'checked' : '' }}>
         <label for="next_phase" class="form-check-label">Add to Stock</label>
+    </div>
+
+    <!-- ADD THIS NEW SECTION -->
+    <div id="product_selection_form" style="display: none;">
+        <div class="mb-3">
+            <label class="form-label">Product Option</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="product_option" id="existing_product" value="existing">
+                <label class="form-check-label" for="existing_product">
+                    Add to Existing Product
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="product_option" id="new_product" value="new" checked>
+                <label class="form-check-label" for="new_product">
+                    Create New Product
+                </label>
+            </div>
+        </div>
+
+        <div id="existing_product_dropdown" style="display: none;">
+            <div class="mb-3">
+                <label for="existing_product_id" class="form-label">Select Existing Product</label>
+                <select class="form-select" id="existing_product_id" name="existing_product_id">
+                    <option value="">Choose existing product...</option>
+                    @isset($existingProducts)
+                        @foreach($existingProducts as $existingProduct)
+                            <option value="{{ $existingProduct->id }}">
+                                {{ $existingProduct->name }} (Stock: {{ $existingProduct->in_stock }})
+                            </option>
+                        @endforeach
+                    @endisset
+                </select>
+            </div>
+        </div>
     </div>
 
     <div id="products_form" style="display: none;">
@@ -633,6 +669,63 @@
                     console.log('error');
                 }
             });
+        });
+
+
+        // Show/hide product selection when "Add to Stock" is checked
+        document.getElementById('next_phase').addEventListener('change', function() {
+            const productSelection = document.getElementById('product_selection_form');
+            const productsForm = document.getElementById('products_form');
+            
+            if (this.checked) {
+                productSelection.style.display = 'block';
+                // Show products form by default (new product selected)
+                productsForm.style.display = 'block';
+            } else {
+                productSelection.style.display = 'none';
+                productsForm.style.display = 'none';
+            }
+        });
+
+        // Handle product option selection
+        document.querySelectorAll('input[name="product_option"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const existingDropdown = document.getElementById('existing_product_dropdown');
+                const productsForm = document.getElementById('products_form');
+                
+                if (this.value === 'existing') {
+                    existingDropdown.style.display = 'block';
+                    productsForm.style.display = 'none';
+                } else {
+                    existingDropdown.style.display = 'none';
+                    productsForm.style.display = 'block';
+                }
+            });
+        });
+
+        // Auto-fill product name when existing product is selected
+        document.getElementById('existing_product_id').addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const productName = selectedOption.text.split(' (Stock:')[0];
+                document.getElementById('item_name').value = productName;
+                document.getElementById('item_name_display').value = productName;
+            }
+        });
+
+        // Auto-fill product name from type of cheese
+        document.getElementById('type_of_mouneh').addEventListener('input', function() {
+            document.getElementById('item_name').value = this.value;
+            document.getElementById('item_name_display').value = this.value;
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cheeseType = document.getElementById('type_of_mouneh').value;
+            if (cheeseType) {
+                document.getElementById('item_name').value = cheeseType;
+                document.getElementById('item_name_display').value = cheeseType;
+            }
         });
     </script>
 @endpush
